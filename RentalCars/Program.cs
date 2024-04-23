@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddDbContext<RentalContext>();
-builder.Services.AddScoped<RentalService>(); // Add this line
+builder.Services.AddScoped<RentalService>(); 
 
 var app = builder.Build();
 
@@ -17,10 +17,8 @@ var serviceScopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>(
 // Create a new scope
 using (var scope = serviceScopeFactory.CreateScope())
 {
-    // Get the RentalContext in the scope
     var context = scope.ServiceProvider.GetRequiredService<RentalContext>();
 
-    // Call the DbInitializer to seed the database
     DbInitializer.Initialize(context);
 }
 
