@@ -1,0 +1,155 @@
+﻿@page "/rentals"
+@using RentalCars.Data
+@inject RentalService RentalService
+
+<PageTitle>Rentals</PageTitle>
+
+<h1>Rentals</h1>
+
+<p>
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div class="alert alert-success" role="alert">
+            @message
+        </div>
+    }
+</p>
+<p>
+    Filter by Customer ID:
+    <input type="number" @bind="filterCustomerId"/>
+    <button @onclick="ApplyFilter">Apply Filter</button>
+</p>
+
+@if (rentals == null)
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Customer</th>
+            <th>Car</th>
+            <th>Rental Date</th>
+            <th>Return Date</th>
+            <th>Status</th>
+            <th>Price</th>
+            <th>Mileage</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var rental in rentals)
+        {
+            <tr>
+                <td>@rental.RentalsId</td>
+                <td>
+                    <input type="number" @bind="rental.CustomerId"/>
+                </td>
+                <td>
+                    <input type="number" @bind="rental.CarId"/>
+                </td>
+                <td>
+                    <input type="date" @bind="rental.RentalDate"/>
+                </td>
+                <td>
+                    <input type="date" @bind="rental.ReturnDate"/>
+                </td>
+                <td>
+                    <input type="text" @bind="rental.Status"/>
+                </td>
+                <td>
+                    <input type="text" @bind="rental.Price"/>
+                </td>
+                <td>
+                    <input type="text" @bind="rental.Mileage"/>
+                </td>
+                <td>
+                    <button @onclick="() => SaveRental(rental)">Save</button>
+                    <button @onclick="() => DeleteRental(rental)">Delete</button>
+                </td>
+            </tr>
+        }
+        <tr>
+            <td>
+
+            </td>
+            <td>
+                <input type="number" @bind="newRental.CustomerId"/>
+            </td>
+            <td>
+                <input type="number" @bind="newRental.CarId"/>
+            </td>
+            <td>
+                <input type="date" @bind="newRental.RentalDate"/>
+            </td>
+            <td>
+                <input type="date" @bind="newRental.ReturnDate"/>
+            </td>
+            <td>
+                <input @bind="newRental.Status"/>
+            </td>
+            <td>
+                <input @bind="newRental.Price"/>
+            </td>
+            <td>
+                <input @bind="newRental.Mileage"/>
+            </td>
+            <td>
+                <button @onclick="CreateRental">Create</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Models.Rentals>? rentals;
+    private Models.Rentals newRental = new();
+    private string message = "";
+    private int? filterCustomerId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        rentals = await RentalService.GetRentalsSortedByDate();
+    }
+
+    private void SaveRental(Models.Rentals rental)
+    {
+        RentalService.EditRental(rental);
+        message = "Rental has been saved.";
+    }
+
+    private async void DeleteRental(Models.Rentals rental)
+    {
+        await RentalService.DeleteRental(rental.RentalsId);
+        rentals = await RentalService.GetRentalsSortedByDate(); // Refresh the list
+    }
+
+    private async void CreateRental()
+    {
+        // Implement the logic to create a new rental
+        // Assuming RentalService has a method CreateRental
+        await RentalService.CreateRental(newRental);
+        rentals = await RentalService.GetRentalsSortedByDate(); // Refresh the list
+        newRental = new Models.Rentals(); // Reset the newRental object
+    }
+
+    private async void ApplyFilter()
+    {
+        if (filterCustomerId.HasValue)
+        {
+            rentals = await RentalService.GetRentalsForUser(filterCustomerId.Value);
+        }
+        else
+        {
+            rentals = await RentalService.GetRentalsSortedByDate(); // If no filter is applied, show all rentals
+        }
+    }
+
+
+}

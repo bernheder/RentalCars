@@ -1,0 +1,113 @@
+﻿@page "/cars"
+@using RentalCars.Data
+@using RentalCars.Models
+@inject RentalService RentalService
+
+<PageTitle>Cars</PageTitle>
+
+<h1>Cars</h1>
+
+<p>
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div class="alert alert-success" role="alert">
+            @message
+        </div>
+    }
+    .
+</p>
+
+@if (cars == null)
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Model</th>
+            <th>Price</th>
+            <th>Year</th>
+            <th>Mileage</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var car in cars)
+        {
+            <tr>
+                <td>@car.CarId</td>
+                <td>
+                    <input type="text" @bind="car.Model"/>
+                </td>
+                <td>
+                    <input type="number" @bind="car.Price"/>
+                </td>
+                <td>
+                    <input type="number" @bind="car.Year"/>
+                </td>
+                <td>
+                    <input type="number" @bind="car.Mileage"/>
+                </td>
+                <td>
+                    <button @onclick="() => SaveCar(car)">Save</button>
+                    <button @onclick="() => DeleteCar(car)">Delete</button>
+                </td>
+            </tr>
+        }
+        <tr>
+            <td></td>
+            <td>
+                <input type="text" @bind="newCar.Model"/>
+            </td>
+            <td>
+                <input type="number" @bind="newCar.Price"/>
+            </td>
+            <td>
+                <input type="number" @bind="newCar.Year"/>
+            </td>
+            <td>
+                <input type="number" @bind="newCar.Mileage"/>
+            </td>
+            <td>
+                <button @onclick="CreateCar">Create</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Car>? cars;
+    private Car newCar = new();
+    private string message = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        cars = await RentalService.GetCars();
+    }
+
+    private void SaveCar(Car car)
+    {
+        RentalService.EditCar(car);
+        message = "Car has been saved.";
+    }
+
+    private async void DeleteCar(Car car)
+    {
+        await RentalService.DeleteCar(car.CarId);
+        cars = await RentalService.GetCars(); // Refresh the list
+    }
+
+    private async void CreateCar()
+    {
+        await RentalService.CreateCar(newCar);
+        cars = await RentalService.GetCars(); // Refresh the list
+        newCar = new Car(); // Reset the newCar object
+    }
+
+}

@@ -1,0 +1,8 @@
+﻿services:
+  rentalcars:
+    image: rentalcars
+    build:
+      context: .
+      dockerfile: RentalCars/Dockerfile
+    ports:
+      - "8000:80"

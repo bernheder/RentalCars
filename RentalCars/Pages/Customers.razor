@@ -1,0 +1,115 @@
+﻿@page "/customers"
+@using RentalCars.Data
+@using RentalCars.Models
+@inject RentalService RentalService
+
+<PageTitle>Customers</PageTitle>
+
+<h1>Customers</h1>
+
+<p>
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div class="alert alert-success" role="alert">
+            @message
+        </div>
+    }
+    .
+</p>
+
+
+@if (customers == null)
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Last Name</th>
+            <th>First Name</th>
+            <th>Email</th>
+            <th>Registration Date</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var customer in customers)
+        {
+            <tr>
+                <td>@customer.CustomerId</td>
+                <td>
+                    <input type="text" @bind="customer.LastName"/>
+                </td>
+                <td>
+                    <input type="text" @bind="customer.FirstName"/>
+                </td>
+                <td>
+                    <input type="text" @bind="customer.Email"/>
+                </td>
+                <td>
+                    <input type="date" @bind="customer.RegistrationDate"/>
+                </td>
+                <td>
+                    <button @onclick="() => SaveCustomer(customer)">Save</button>
+                    <button @onclick="() => DeleteCustomer(customer)">Delete</button>
+                </td>
+            </tr>
+        }
+        <tr>
+            <td></td>
+            <td>
+                <input type="text" @bind="newCustomer.LastName"/>
+            </td>
+            <td>
+                <input type="text" @bind="newCustomer.FirstName"/>
+            </td>
+            <td>
+                <input type="text" @bind="newCustomer.Email"/>
+            </td>
+            <td>
+                <input type="date" @bind="newCustomer.RegistrationDate"/>
+            </td>
+            <td>
+                <button @onclick="CreateCustomer">Create</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Customer>? customers;
+    private Customer newCustomer = new();
+    private string message = "";
+    private string? filterLastName;
+
+    protected override async Task OnInitializedAsync()
+    {
+        customers = await RentalService.GetCustomers();
+    }
+
+    private void SaveCustomer(Customer customer)
+    {
+        RentalService.EditCustomer(customer);
+        message = "Customer has been saved.";
+    }
+
+    private async void DeleteCustomer(Customer customer)
+    {
+        await RentalService.DeleteCustomer(customer.CustomerId);
+        customers = await RentalService.GetCustomers(); // Refresh the list
+    }
+
+    private async void CreateCustomer()
+    {
+        await RentalService.CreateCustomer(newCustomer);
+        customers = await RentalService.GetCustomers(); // Refresh the list
+        newCustomer = new Customer(); // Reset the newCustomer object
+    }
+
+}
